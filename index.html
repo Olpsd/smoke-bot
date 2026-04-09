@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Счётчик сигарет</title>
+    <!-- Подключаем SDK Telegram -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 16px;
+            background: var(--tg-theme-bg-color, #1a1a1a);
+            color: var(--tg-theme-text-color, #ffffff);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+        .container {
+            max-width: 300px;
+            width: 100%;
+            text-align: center;
+        }
+        .count-display {
+            margin-bottom: 24px;
+        }
+        .label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 8px;
+            color: var(--tg-theme-hint-color, #aaaaaa);
+        }
+        .number {
+            font-size: 72px;
+            font-weight: bold;
+            margin: 8px 0;
+            color: var(--tg-theme-button-color, #e74c3c);
+        }
+        .btn {
+            background: var(--tg-theme-button-color, #e74c3c);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 12px;
+            padding: 18px 24px;
+            font-size: 20px;
+            font-weight: 600;
+            width: 100%;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn:active {
+            opacity: 0.8;
+        }
+        .btn.reset {
+            background: transparent;
+            border: 1px solid var(--tg-theme-hint-color, #555);
+            color: var(--tg-theme-hint-color, #aaa);
+            font-size: 16px;
+            padding: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="count-display">
+            <div class="label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
+            <div class="number" id="counter">0</div>
+        </div>
+
+        <button class="btn" id="addBtn">+1 СИГАРЕТА</button>
+        <button class="btn reset" id="resetBtn">Сбросить счётчик</button>
+        <p style="font-size: 12px; opacity: 0.5; margin-top: 24px;">Статистика хранится на устройстве</p>
+    </div>
+
+    <script>
+        // Инициализация Telegram Mini App
+        let tg = window.Telegram.WebApp;
+        tg.ready(); // Сообщаем Telegram, что приложение загрузилось
+        tg.expand(); // Растягиваем окно на весь экран
+
+        // Настройка цветов под тему Telegram
+        document.body.style.backgroundColor = tg.backgroundColor;
+        document.body.style.color = tg.textColor;
+
+        // Логика счетчика
+        let count = 0;
+        const counterElement = document.getElementById('counter');
+        const addBtn = document.getElementById('addBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // Ключ для localStorage
+        const STORAGE_KEY = 'sigarette_counter_app';
+
+        // Функция обновления UI
+        function updateUI() {
+            counterElement.textContent = count;
+            // Сохраняем в памяти браузера при каждом изменении
+            localStorage.setItem(STORAGE_KEY, count.toString());
+        }
+
+        // Загрузка данных при старте
+        const savedCount = localStorage.getItem(STORAGE_KEY);
+        if (savedCount) {
+            count = parseInt(savedCount, 10) || 0;
+        }
+        updateUI();
+
+        // Обработчик нажатия на кнопку "+1 СИГАРЕТА"
+        addBtn.addEventListener('click', () => {
+            count++;
+            updateUI();
+            
+            // Легкая вибрация при нажатии (если поддерживается)
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        });
+
+        // Обработчик сброса счетчика
+        resetBtn.addEventListener('click', () => {
+            // Запрашиваем подтверждение через нативный попап Telegram (выглядит стильно)
+            tg.showConfirm('Вы уверены, что хотите обнулить счетчик за сегодня?', (confirmed) => {
+                if (confirmed) {
+                    count = 0;
+                    updateUI();
+                    if (tg.HapticFeedback) {
+                        tg.HapticFeedback.notificationOccurred('warning');
+                    }
+                }
+            });
+        });
+        
+        // Настройка главной кнопки Telegram (кнопка внизу экрана)
+        tg.MainButton.text = 'ЗАКРЫТЬ СЧЁТЧИК';
+        tg.MainButton.show();
+        tg.MainButton.onClick(() => {
+            tg.close(); // Закрываем Mini App
+        });
+    </script>
+</body>
+</html>
