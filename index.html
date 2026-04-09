@@ -3,145 +3,675 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Счётчик сигарет</title>
-    <!-- Подключаем SDK Telegram -->
+    <title>Smoke Tracker Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body {
+        * {
             margin: 0;
-            padding: 16px;
-            background: var(--tg-theme-bg-color, #1a1a1a);
-            color: var(--tg-theme-text-color, #ffffff);
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            padding: 0;
             box-sizing: border-box;
         }
-        .container {
-            max-width: 300px;
-            width: 100%;
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            background: var(--tg-theme-bg-color, #0f0f0f);
+            color: var(--tg-theme-text-color, #ffffff);
+            padding: 16px;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .app {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Карточки */
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Таймер */
+        .timer-section {
             text-align: center;
+            background: linear-gradient(135deg, #2c3e50, #1a252f);
+            border: 1px solid rgba(231, 76, 60, 0.3);
         }
-        .count-display {
-            margin-bottom: 24px;
-        }
-        .label {
-            font-size: 14px;
+
+        .timer-label {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             opacity: 0.7;
             margin-bottom: 8px;
-            color: var(--tg-theme-hint-color, #aaaaaa);
         }
-        .number {
-            font-size: 72px;
-            font-weight: bold;
-            margin: 8px 0;
-            color: var(--tg-theme-button-color, #e74c3c);
+
+        .timer-display {
+            font-size: 48px;
+            font-weight: 700;
+            font-family: 'SF Mono', 'Courier New', monospace;
+            color: #e74c3c;
+            text-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
+            margin: 10px 0;
         }
-        .btn {
-            background: var(--tg-theme-button-color, #e74c3c);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 12px;
-            padding: 18px 24px;
-            font-size: 20px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            transition: opacity 0.2s;
-            margin-bottom: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-        .btn:active {
+
+        .timer-status {
+            font-size: 14px;
             opacity: 0.8;
         }
-        .btn.reset {
-            background: transparent;
-            border: 1px solid var(--tg-theme-hint-color, #555);
-            color: var(--tg-theme-hint-color, #aaa);
+
+        /* Счётчик сигарет */
+        .counter-section {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .counter-info {
+            flex: 1;
+        }
+
+        .counter-label {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-bottom: 4px;
+        }
+
+        .counter-number {
+            font-size: 42px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #e74c3c);
+        }
+
+        .counter-limit {
             font-size: 16px;
+            opacity: 0.5;
+        }
+
+        .counter-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            background: var(--tg-theme-button-color, #e74c3c);
+            color: var(--tg-theme-button-text-color, #fff);
+            border: none;
+            font-size: 28px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-icon:active {
+            transform: scale(0.95);
+            opacity: 0.8;
+        }
+
+        .btn-icon.reset {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--tg-theme-hint-color, #888);
+            font-size: 20px;
+        }
+
+        /* Настройки лимита */
+        .limit-settings {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .limit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .limit-title {
+            font-size: 14px;
+            opacity: 0.7;
+        }
+
+        .limit-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .limit-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .limit-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--tg-theme-text-color, #fff);
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .limit-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .limit-input {
+            flex: 1;
+            text-align: center;
+        }
+
+        .limit-number {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e74c3c, #ff6b6b);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* График */
+        .chart-section {
+            padding: 16px 0;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .week-nav {
+            display: flex;
+            gap: 8px;
+        }
+
+        .week-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: var(--tg-theme-text-color, #fff);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        canvas {
+            width: 100% !important;
+            height: 200px !important;
+        }
+
+        /* Статистика */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .stat-item {
+            text-align: center;
             padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--tg-theme-button-color, #e74c3c);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 4px;
+        }
+
+        /* Анимации */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .warning {
+            color: #f1c40f;
+            animation: pulse 2s infinite;
+        }
+
+        .danger {
+            color: #e74c3c;
+        }
+
+        .success {
+            color: #2ecc71;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="count-display">
-            <div class="label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
-            <div class="number" id="counter">0</div>
+    <div class="app">
+        <!-- Таймер -->
+        <div class="card timer-section">
+            <div class="timer-label">⏱️ Время без сигарет</div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-status" id="timerStatus">Нажмите +1 для старта</div>
         </div>
 
-        <button class="btn" id="addBtn">+1 СИГАРЕТА</button>
-        <button class="btn reset" id="resetBtn">Сбросить счётчик</button>
-        <p style="font-size: 12px; opacity: 0.5; margin-top: 24px;">Статистика хранится на устройстве</p>
+        <!-- Счётчик и лимит -->
+        <div class="card">
+            <div class="counter-section">
+                <div class="counter-info">
+                    <div class="counter-label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
+                    <div>
+                        <span class="counter-number" id="counter">0</span>
+                        <span class="counter-limit" id="limitDisplay">/ 15</span>
+                    </div>
+                </div>
+                <div class="counter-actions">
+                    <button class="btn-icon reset" id="resetBtn">↻</button>
+                    <button class="btn-icon" id="addBtn">+</button>
+                </div>
+            </div>
+
+            <!-- Прогресс-бар -->
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <!-- Настройки лимита -->
+            <div class="limit-settings">
+                <div class="limit-header">
+                    <span class="limit-title">🎯 ДНЕВНОЙ ЛИМИТ</span>
+                    <span class="limit-value" id="limitValue">15</span>
+                </div>
+                <div class="limit-control">
+                    <button class="limit-btn" id="limitMinus">−</button>
+                    <div class="limit-input">
+                        <span class="limit-number" id="limitNumber">15</span>
+                    </div>
+                    <button class="limit-btn" id="limitPlus">+</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- График -->
+        <div class="card chart-section">
+            <div class="chart-header">
+                <span class="chart-title">📊 СТАТИСТИКА ЗА НЕДЕЛЮ</span>
+                <div class="week-nav">
+                    <button class="week-btn" id="prevWeek">←</button>
+                    <button class="week-btn" id="nextWeek">→</button>
+                </div>
+            </div>
+            <canvas id="weeklyChart"></canvas>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="avgPerDay">0</div>
+                    <div class="stat-label">В среднем в день</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="totalWeek">0</div>
+                    <div class="stat-label">Всего за неделю</div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // Инициализация Telegram Mini App
+        // Инициализация Telegram
         let tg = window.Telegram.WebApp;
-        tg.ready(); // Сообщаем Telegram, что приложение загрузилось
-        tg.expand(); // Растягиваем окно на весь экран
+        tg.ready();
+        tg.expand();
 
-        // Настройка цветов под тему Telegram
-        document.body.style.backgroundColor = tg.backgroundColor;
-        document.body.style.color = tg.textColor;
+        // Состояние приложения
+        let state = {
+            count: 0,
+            limit: 15,
+            lastSmokeTime: null,
+            timerInterval: null,
+            weeklyData: {},
+            currentWeekOffset: 0
+        };
 
-        // Логика счетчика
-        let count = 0;
-        const counterElement = document.getElementById('counter');
-        const addBtn = document.getElementById('addBtn');
-        const resetBtn = document.getElementById('resetBtn');
+        // DOM элементы
+        const elements = {
+            counter: document.getElementById('counter'),
+            limitDisplay: document.getElementById('limitDisplay'),
+            limitValue: document.getElementById('limitValue'),
+            limitNumber: document.getElementById('limitNumber'),
+            progressFill: document.getElementById('progressFill'),
+            timerDisplay: document.getElementById('timerDisplay'),
+            timerStatus: document.getElementById('timerStatus'),
+            addBtn: document.getElementById('addBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            limitMinus: document.getElementById('limitMinus'),
+            limitPlus: document.getElementById('limitPlus'),
+            prevWeek: document.getElementById('prevWeek'),
+            nextWeek: document.getElementById('nextWeek'),
+            avgPerDay: document.getElementById('avgPerDay'),
+            totalWeek: document.getElementById('totalWeek')
+        };
 
-        // Ключ для localStorage
-        const STORAGE_KEY = 'sigarette_counter_app';
-
-        // Функция обновления UI
-        function updateUI() {
-            counterElement.textContent = count;
-            // Сохраняем в памяти браузера при каждом изменении
-            localStorage.setItem(STORAGE_KEY, count.toString());
-        }
-
-        // Загрузка данных при старте
-        const savedCount = localStorage.getItem(STORAGE_KEY);
-        if (savedCount) {
-            count = parseInt(savedCount, 10) || 0;
-        }
-        updateUI();
-
-        // Обработчик нажатия на кнопку "+1 СИГАРЕТА"
-        addBtn.addEventListener('click', () => {
-            count++;
+        // Загрузка данных
+        function loadState() {
+            const saved = localStorage.getItem('smokeTrackerState');
+            if (saved) {
+                state = { ...state, ...JSON.parse(saved) };
+            }
             updateUI();
+            startTimerIfNeeded();
+            loadWeeklyData();
+        }
+
+        // Сохранение данных
+        function saveState() {
+            localStorage.setItem('smokeTrackerState', JSON.stringify({
+                count: state.count,
+                limit: state.limit,
+                lastSmokeTime: state.lastSmokeTime,
+                weeklyData: state.weeklyData
+            }));
+        }
+
+        // Обновление UI
+        function updateUI() {
+            elements.counter.textContent = state.count;
+            elements.limitDisplay.textContent = `/ ${state.limit}`;
+            elements.limitValue.textContent = state.limit;
+            elements.limitNumber.textContent = state.limit;
             
-            // Легкая вибрация при нажатии (если поддерживается)
+            const progress = (state.count / state.limit) * 100;
+            elements.progressFill.style.width = `${Math.min(progress, 100)}%`;
+            
+            if (state.count >= state.limit) {
+                elements.progressFill.style.background = 'linear-gradient(90deg, #f1c40f, #e74c3c)';
+            } else {
+                elements.progressFill.style.background = 'linear-gradient(90deg, #e74c3c, #ff6b6b)';
+            }
+        }
+
+        // Таймер
+        function startTimerIfNeeded() {
+            if (state.lastSmokeTime) {
+                updateTimer();
+                if (!state.timerInterval) {
+                    state.timerInterval = setInterval(updateTimer, 1000);
+                }
+            }
+        }
+
+        function updateTimer() {
+            if (!state.lastSmokeTime) {
+                elements.timerDisplay.textContent = '00:00:00';
+                elements.timerStatus.textContent = 'Нажмите +1 для старта';
+                return;
+            }
+
+            const now = Date.now();
+            const diff = Math.floor((now - state.lastSmokeTime) / 1000);
+            
+            const hours = Math.floor(diff / 3600);
+            const minutes = Math.floor((diff % 3600) / 60);
+            const seconds = diff % 60;
+            
+            elements.timerDisplay.textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            if (diff < 3600) {
+                elements.timerStatus.textContent = '🔥 Сложный период, держитесь!';
+                elements.timerStatus.className = 'timer-status danger';
+            } else if (diff < 7200) {
+                elements.timerStatus.textContent = '💪 Вы справляетесь!';
+                elements.timerStatus.className = 'timer-status warning';
+            } else {
+                elements.timerStatus.textContent = '✨ Отлично! Так держать!';
+                elements.timerStatus.className = 'timer-status success';
+            }
+        }
+
+        function resetTimer() {
+            state.lastSmokeTime = Date.now();
+            if (state.timerInterval) {
+                clearInterval(state.timerInterval);
+            }
+            state.timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+            saveState();
+            
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('medium');
+            }
+        }
+
+        // Добавление сигареты
+        function addSmoke() {
+            state.count++;
+            
+            // Сохраняем в недельную статистику
+            const today = getTodayKey();
+            state.weeklyData[today] = (state.weeklyData[today] || 0) + 1;
+            
+            resetTimer();
+            updateUI();
+            saveState();
+            updateChart();
+            
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
-        });
+            
+            // Уведомление о превышении лимита
+            if (state.count === state.limit) {
+                tg.showPopup({
+                    title: '⚠️ Внимание',
+                    message: 'Вы достигли дневного лимита! Постарайтесь больше не курить сегодня.',
+                    buttons: [{type: 'ok'}]
+                });
+            } else if (state.count > state.limit) {
+                tg.showPopup({
+                    title: '❌ Превышение лимита',
+                    message: `Вы превысили лимит на ${state.count - state.limit} сигарет.`,
+                    buttons: [{type: 'ok'}]
+                });
+            }
+        }
 
-        // Обработчик сброса счетчика
-        resetBtn.addEventListener('click', () => {
-            // Запрашиваем подтверждение через нативный попап Telegram (выглядит стильно)
-            tg.showConfirm('Вы уверены, что хотите обнулить счетчик за сегодня?', (confirmed) => {
+        // Сброс счётчика
+        function resetCounter() {
+            tg.showConfirm('Сбросить счётчик за сегодня?', (confirmed) => {
                 if (confirmed) {
-                    count = 0;
+                    state.count = 0;
                     updateUI();
+                    saveState();
                     if (tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('warning');
                     }
                 }
             });
+        }
+
+        // Управление лимитом
+        function changeLimit(delta) {
+            state.limit = Math.max(1, Math.min(50, state.limit + delta));
+            updateUI();
+            saveState();
+            
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('soft');
+            }
+        }
+
+        // Работа с датами
+        function getTodayKey() {
+            const date = new Date();
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function getWeekDates(offset = 0) {
+            const dates = [];
+            const today = new Date();
+            const currentDay = today.getDay() || 7;
+            const monday = new Date(today);
+            monday.setDate(today.getDate() - currentDay + 1 + (offset * 7));
+            
+            for (let i = 0; i < 7; i++) {
+                const date = new Date(monday);
+                date.setDate(monday.getDate() + i);
+                dates.push(date);
+            }
+            return dates;
+        }
+
+        // График
+        let chart = null;
+
+        function loadWeeklyData() {
+            const saved = localStorage.getItem('smokeTrackerState');
+            if (saved) {
+                const data = JSON.parse(saved);
+                state.weeklyData = data.weeklyData || {};
+            }
+        }
+
+        function updateChart() {
+            const dates = getWeekDates(state.currentWeekOffset);
+            const labels = dates.map(d => {
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                return `${day}.${month}`;
+            });
+            
+            const values = dates.map(d => {
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                return state.weeklyData[key] || 0;
+            });
+
+            const total = values.reduce((a, b) => a + b, 0);
+            const avg = (total / 7).toFixed(1);
+            
+            elements.totalWeek.textContent = total;
+            elements.avgPerDay.textContent = avg;
+
+            const ctx = document.getElementById('weeklyChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Сигарет',
+                        data: values,
+                        backgroundColor: values.map(v => v > 0 ? '#e74c3c' : '#3a3a3c'),
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)',
+                                stepSize: 5
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: 'rgba(255, 255, 255, 0.7)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function changeWeek(delta) {
+            state.currentWeekOffset += delta;
+            updateChart();
+            
+            if (tg.HapticFeedback) {
+                tg.HapticFeedback.impactOccurred('soft');
+            }
+        }
+
+        // Обработчики событий
+        elements.addBtn.addEventListener('click', addSmoke);
+        elements.resetBtn.addEventListener('click', resetCounter);
+        elements.limitMinus.addEventListener('click', () => changeLimit(-1));
+        elements.limitPlus.addEventListener('click', () => changeLimit(5));
+        elements.prevWeek.addEventListener('click', () => changeWeek(-1));
+        elements.nextWeek.addEventListener('click', () => {
+            if (state.currentWeekOffset < 0) {
+                changeWeek(1);
+            }
         });
-        
-        // Настройка главной кнопки Telegram (кнопка внизу экрана)
-        tg.MainButton.text = 'ЗАКРЫТЬ СЧЁТЧИК';
+
+        // Главная кнопка Telegram
+        tg.MainButton.text = '📊 ЗАКРЫТЬ';
         tg.MainButton.show();
-        tg.MainButton.onClick(() => {
-            tg.close(); // Закрываем Mini App
-        });
+        tg.MainButton.onClick(() => tg.close());
+
+        // Инициализация
+        loadState();
+        updateChart();
+
+        // Автосохранение при закрытии
+        window.addEventListener('beforeunload', saveState);
     </script>
 </body>
 </html>
