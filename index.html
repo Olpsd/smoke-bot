@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Smoke Tracker Pro</title>
+    <title>Smoke Tracker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -14,153 +13,83 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
-            background: var(--tg-theme-bg-color, #0f0f0f);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--tg-theme-bg-color, #1a1a1a);
             color: var(--tg-theme-text-color, #ffffff);
             padding: 16px;
             min-height: 100vh;
-            transition: all 0.3s ease;
         }
 
         .app {
             max-width: 400px;
             margin: 0 auto;
-            padding-bottom: 20px;
+        }
+
+        .card {
+            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
         }
 
         /* Приветствие */
-        .welcome-card {
-            background: linear-gradient(135deg, var(--tg-theme-button-color, #e74c3c), #c0392b);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
+        .welcome {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
         }
 
-        .welcome-title {
-            font-size: 24px;
-            font-weight: 700;
+        .welcome h2 {
+            font-size: 22px;
             margin-bottom: 8px;
         }
 
-        .welcome-name {
-            font-size: 18px;
-            opacity: 0.95;
-            margin-bottom: 4px;
-        }
-
-        .welcome-stats {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 16px;
-        }
-
-        .welcome-stat {
-            text-align: center;
-        }
-
-        .welcome-stat-value {
-            font-size: 24px;
-            font-weight: 700;
-        }
-
-        .welcome-stat-label {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-
-        /* Настройка имени */
-        .name-setup {
-            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            text-align: center;
-        }
-
-        .name-input {
-            width: 100%;
-            padding: 16px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: var(--tg-theme-text-color, #fff);
-            font-size: 16px;
-            margin-bottom: 12px;
-            text-align: center;
-        }
-
-        /* Вкладки */
-        .tabs {
+        .name-input-group {
             display: flex;
             gap: 8px;
-            margin-bottom: 16px;
-            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-            padding: 4px;
-            border-radius: 12px;
+            margin-top: 12px;
         }
 
-        .tab {
+        .name-input-group input {
             flex: 1;
-            padding: 12px 8px;
-            background: transparent;
+            padding: 12px;
             border: none;
-            color: var(--tg-theme-text-color, #fff);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
             border-radius: 8px;
-            transition: all 0.2s;
-            opacity: 0.6;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 16px;
         }
 
-        .tab.active {
-            background: var(--tg-theme-button-color, #e74c3c);
-            color: var(--tg-theme-button-text-color, #fff);
-            opacity: 1;
+        .name-input-group input::placeholder {
+            color: rgba(255,255,255,0.7);
         }
 
-        /* Панели */
-        .panel {
-            display: none;
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        /* Карточки */
-        .card {
-            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 16px;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .name-input-group button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background: white;
+            color: #e74c3c;
+            font-weight: 600;
+            cursor: pointer;
         }
 
         /* Таймер */
-        .timer-section {
+        .timer {
             text-align: center;
-            background: linear-gradient(135deg, #2c3e50, #1a252f);
-            border: 1px solid rgba(231, 76, 60, 0.3);
         }
 
         .timer-label {
-            font-size: 13px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            font-size: 14px;
             opacity: 0.7;
             margin-bottom: 8px;
         }
 
         .timer-display {
-            font-size: 48px;
+            font-size: 56px;
             font-weight: 700;
-            font-family: 'SF Mono', 'Courier New', monospace;
+            font-family: monospace;
             color: #e74c3c;
-            text-shadow: 0 0 20px rgba(231, 76, 60, 0.3);
-            margin: 10px 0;
+            margin: 8px 0;
         }
 
         .timer-status {
@@ -169,7 +98,7 @@
         }
 
         /* Счётчик */
-        .counter-section {
+        .counter-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -182,769 +111,426 @@
         .counter-label {
             font-size: 14px;
             opacity: 0.7;
-            margin-bottom: 4px;
         }
 
-        .counter-number {
-            font-size: 42px;
+        .counter-value {
+            font-size: 48px;
             font-weight: 700;
-            color: var(--tg-theme-button-color, #e74c3c);
+            color: #e74c3c;
         }
 
         .counter-limit {
-            font-size: 16px;
+            font-size: 18px;
             opacity: 0.5;
         }
 
-        .counter-actions {
+        .counter-buttons {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .btn-icon {
-            width: 56px;
-            height: 56px;
-            border-radius: 28px;
-            background: var(--tg-theme-button-color, #e74c3c);
-            color: var(--tg-theme-button-text-color, #fff);
+        .btn-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 30px;
             border: none;
+            background: #e74c3c;
+            color: white;
             font-size: 28px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
         }
 
-        .btn-icon:active {
-            transform: scale(0.95);
-            opacity: 0.8;
+        .btn-circle.reset {
+            background: #3a3a3c;
+            font-size: 24px;
         }
 
-        .btn-icon.reset {
-            background: transparent;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: var(--tg-theme-hint-color, #888);
-            font-size: 20px;
-        }
-
-        /* Настройки */
-        .settings-group {
-            margin-bottom: 20px;
-        }
-
-        .settings-label {
-            font-size: 14px;
-            opacity: 0.7;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        .settings-input {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .settings-input input {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: var(--tg-theme-text-color, #fff);
-            font-size: 16px;
-        }
-
-        .currency-select {
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            border-radius: 12px;
-            color: var(--tg-theme-text-color, #fff);
-            font-size: 16px;
-            width: 100%;
-        }
-
-        /* Достижения */
-        .achievements-grid {
-            display: grid;
-            gap: 12px;
-        }
-
-        .achievement-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            opacity: 0.5;
-            transition: all 0.3s;
-        }
-
-        .achievement-item.unlocked {
-            opacity: 1;
-            background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.1));
-            border: 1px solid rgba(231, 76, 60, 0.3);
-        }
-
-        .achievement-icon {
-            font-size: 32px;
-        }
-
-        .achievement-info {
-            flex: 1;
-        }
-
-        .achievement-name {
-            font-weight: 600;
-            margin-bottom: 4px;
-        }
-
-        .achievement-desc {
-            font-size: 12px;
+        .btn-circle:active {
             opacity: 0.7;
         }
 
-        /* Экономия */
-        .savings-card {
-            text-align: center;
-            padding: 20px;
-        }
-
-        .savings-amount {
-            font-size: 48px;
-            font-weight: 700;
-            color: #2ecc71;
-            margin: 10px 0;
-        }
-
-        .savings-detail {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-        }
-
-        .detail-item {
-            text-align: center;
-        }
-
-        .detail-value {
-            font-size: 20px;
-            font-weight: 600;
-        }
-
-        .detail-label {
-            font-size: 12px;
-            opacity: 0.7;
-        }
-
-        /* Прогресс-бар */
+        /* Прогресс */
         .progress-bar {
-            width: 100%;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 3px;
-            margin-top: 12px;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            margin-top: 16px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #e74c3c, #ff6b6b);
-            border-radius: 3px;
-            transition: width 0.3s ease;
+            background: #e74c3c;
+            border-radius: 4px;
             width: 0%;
+            transition: width 0.3s;
         }
 
-        /* Кнопки */
-        .btn {
+        /* Настройки */
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .setting-label {
+            font-size: 16px;
+        }
+
+        .setting-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .setting-control button {
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            border: none;
+            background: #3a3a3c;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .setting-control span {
+            font-size: 20px;
+            font-weight: 600;
+            min-width: 30px;
+            text-align: center;
+        }
+
+        /* Экономия */
+        .savings {
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+        }
+
+        .savings-item {
+            flex: 1;
+        }
+
+        .savings-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2ecc71;
+        }
+
+        .savings-label {
+            font-size: 13px;
+            opacity: 0.7;
+        }
+
+        /* Кнопки действий */
+        .action-btn {
             width: 100%;
             padding: 16px;
-            background: var(--tg-theme-button-color, #e74c3c);
-            color: var(--tg-theme-button-text-color, #fff);
             border: none;
             border-radius: 12px;
+            background: #e74c3c;
+            color: white;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
             margin-bottom: 8px;
-            transition: all 0.2s;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-            opacity: 0.9;
+        .action-btn.secondary {
+            background: #3a3a3c;
         }
 
-        .btn.secondary {
-            background: transparent;
-            border: 1px solid var(--tg-theme-button-color, #e74c3c);
-            color: var(--tg-theme-button-color, #e74c3c);
+        .action-btn:active {
+            opacity: 0.7;
         }
 
-        /* График */
-        canvas {
-            width: 100% !important;
-            height: 200px !important;
-        }
-
-        /* Уведомления */
-        .notification-settings {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .switch {
-            position: relative;
-            width: 50px;
-            height: 28px;
-        }
-
-        .switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.2);
-            transition: .4s;
-            border-radius: 34px;
-        }
-
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider {
-            background-color: var(--tg-theme-button-color, #e74c3c);
-        }
-
-        input:checked + .slider:before {
-            transform: translateX(22px);
-        }
-
-        /* Анимации */
-        .success {
-            color: #2ecc71;
-        }
-
-        /* Индикатор загрузки */
-        .toast {
+        /* Уведомление */
+        .toast-message {
             position: fixed;
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0,0,0,0.8);
             color: white;
-            padding: 12px 20px;
+            padding: 12px 24px;
             border-radius: 30px;
             font-size: 14px;
             z-index: 1000;
-            animation: fadeInOut 2s ease;
+            opacity: 0;
+            transition: opacity 0.3s;
         }
 
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0; }
-            10%, 90% { opacity: 1; }
-        }
-
-        /* Редактирование имени */
-        .edit-name {
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 14px;
-            cursor: pointer;
-            margin-left: 8px;
-            opacity: 0.7;
-            transition: opacity 0.2s;
-        }
-
-        .edit-name:hover {
+        .toast-message.show {
             opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="app">
-        <!-- Приветствие с именем -->
-        <div class="welcome-card" id="welcomeCard">
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-                <div>
-                    <div class="welcome-title">
-                        Привет<span id="userNameDisplay">, Гость</span>!
-                    </div>
-                    <div class="welcome-name" id="userStats"></div>
-                </div>
-                <button class="edit-name" id="editNameBtn">✏️</button>
-            </div>
-            <div class="welcome-stats">
-                <div class="welcome-stat">
-                    <div class="welcome-stat-value" id="daysTracked">0</div>
-                    <div class="welcome-stat-label">Дней</div>
-                </div>
-                <div class="welcome-stat">
-                    <div class="welcome-stat-value" id="totalSmoked">0</div>
-                    <div class="welcome-stat-label">Сигарет</div>
-                </div>
-                <div class="welcome-stat">
-                    <div class="welcome-stat-value" id="moneySavedWelcome">0</div>
-                    <div class="welcome-stat-label">Экономия</div>
-                </div>
+        <!-- Приветствие и имя -->
+        <div class="card welcome" id="welcomeCard">
+            <h2>👋 Привет, <span id="displayName">Гость</span>!</h2>
+            <p id="greetingMessage">Введите ваше имя</p>
+            <div class="name-input-group">
+                <input type="text" id="nameInput" placeholder="Ваше имя" maxlength="20">
+                <button id="saveNameBtn">Сохранить</button>
             </div>
         </div>
 
-        <!-- Настройка имени (скрыта по умолчанию) -->
-        <div class="name-setup" id="nameSetup" style="display: none;">
-            <h3 style="margin-bottom: 16px;">👤 Как вас зовут?</h3>
-            <input type="text" class="name-input" id="nameInput" placeholder="Введите ваше имя" maxlength="20">
-            <button class="btn" id="saveNameBtn">Сохранить</button>
-            <button class="btn secondary" id="skipNameBtn">Пропустить</button>
+        <!-- Таймер -->
+        <div class="card timer">
+            <div class="timer-label">⏱️ ВРЕМЯ БЕЗ СИГАРЕТ</div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-status" id="timerStatus">Нажмите +1 для старта</div>
         </div>
 
-        <!-- Вкладки -->
-        <div class="tabs">
-            <button class="tab active" data-tab="main">🏠 Главная</button>
-            <button class="tab" data-tab="stats">📊 Статистика</button>
-            <button class="tab" data-tab="achievements">🏆 Достижения</button>
-            <button class="tab" data-tab="settings">⚙️ Настройки</button>
-        </div>
-
-        <!-- Главная панель -->
-        <div class="panel active" id="panel-main">
-            <!-- Таймер -->
-            <div class="card timer-section">
-                <div class="timer-label">⏱️ Время без сигарет</div>
-                <div class="timer-display" id="timerDisplay">00:00:00</div>
-                <div class="timer-status" id="timerStatus">Нажмите +1 для старта</div>
-            </div>
-
-            <!-- Счётчик -->
-            <div class="card">
-                <div class="counter-section">
-                    <div class="counter-info">
-                        <div class="counter-label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
-                        <div>
-                            <span class="counter-number" id="counter">0</span>
-                            <span class="counter-limit" id="limitDisplay">/ 15</span>
-                        </div>
-                    </div>
-                    <div class="counter-actions">
-                        <button class="btn-icon reset" id="resetBtn">↻</button>
-                        <button class="btn-icon" id="addBtn">+</button>
+        <!-- Счётчик -->
+        <div class="card">
+            <div class="counter-row">
+                <div class="counter-info">
+                    <div class="counter-label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
+                    <div>
+                        <span class="counter-value" id="counter">0</span>
+                        <span class="counter-limit" id="limitDisplay">/ 15</span>
                     </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                <div class="counter-buttons">
+                    <button class="btn-circle reset" id="resetBtn">↻</button>
+                    <button class="btn-circle" id="addBtn">+</button>
                 </div>
             </div>
-
-            <!-- Экономия -->
-            <div class="card savings-card">
-                <div style="font-size: 14px; opacity: 0.7;">💰 СЭКОНОМЛЕНО ВСЕГО</div>
-                <div class="savings-amount" id="moneySaved">0 ₽</div>
-                <div class="savings-detail">
-                    <div class="detail-item">
-                        <div class="detail-value" id="cigarettesSaved">0</div>
-                        <div class="detail-label">Сигарет</div>
-                    </div>
-                    <div class="detail-item">
-                        <div class="detail-value" id="lifeGained">0</div>
-                        <div class="detail-label">Часов жизни</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Быстрые действия -->
-            <button class="btn" id="exportDataBtn">📥 Экспорт данных</button>
-        </div>
-
-        <!-- Статистика -->
-        <div class="panel" id="panel-stats">
-            <div class="card">
-                <canvas id="weeklyChart"></canvas>
-                <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-                    <button class="week-btn" id="prevWeek" style="padding: 8px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; cursor: pointer;">← Пред. неделя</button>
-                    <span id="weekRange" style="color: white;">17.03 - 23.03</span>
-                    <button class="week-btn" id="nextWeek" style="padding: 8px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; cursor: pointer;">След. неделя →</button>
-                </div>
-            </div>
-            <div class="card">
-                <h3 style="margin-bottom: 16px;">📈 Сводка</h3>
-                <div style="display: grid; gap: 12px;">
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Всего сигарет:</span>
-                        <strong id="totalCigarettes">0</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>В среднем в день:</span>
-                        <strong id="avgCigarettes">0</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Лучший результат:</span>
-                        <strong id="bestStreak">0 часов</strong>
-                    </div>
-                </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
         </div>
 
-        <!-- Достижения -->
-        <div class="panel" id="panel-achievements">
-            <div class="card">
-                <h3 style="margin-bottom: 16px;">🏆 Достижения</h3>
-                <div class="achievements-grid" id="achievementsList"></div>
+        <!-- Экономия -->
+        <div class="card">
+            <div class="savings">
+                <div class="savings-item">
+                    <div class="savings-value" id="moneySaved">0 ₽</div>
+                    <div class="savings-label">Сэкономлено</div>
+                </div>
+                <div class="savings-item">
+                    <div class="savings-value" id="cigarettesSaved">0</div>
+                    <div class="savings-label">Сигарет</div>
+                </div>
+                <div class="savings-item">
+                    <div class="savings-value" id="lifeGained">0</div>
+                    <div class="savings-label">Часов жизни</div>
+                </div>
             </div>
         </div>
 
         <!-- Настройки -->
-        <div class="panel" id="panel-settings">
-            <div class="card">
-                <h3 style="margin-bottom: 20px;">⚙️ Настройки</h3>
-                
-                <div class="settings-group">
-                    <label class="settings-label">👤 Ваше имя</label>
-                    <div class="settings-input">
-                        <input type="text" id="userNameSettings" placeholder="Введите имя" maxlength="20">
-                        <button class="btn" style="width: auto; padding: 12px 20px;" id="updateNameBtn">Сохранить</button>
-                    </div>
+        <div class="card">
+            <h3 style="margin-bottom: 16px;">⚙️ Настройки</h3>
+            
+            <div class="setting-row">
+                <span class="setting-label">🎯 Дневной лимит</span>
+                <div class="setting-control">
+                    <button id="limitMinus">−</button>
+                    <span id="limitValue">15</span>
+                    <button id="limitPlus">+</button>
                 </div>
+            </div>
 
-                <div class="settings-group">
-                    <label class="settings-label">🎯 Дневной лимит сигарет</label>
-                    <div class="settings-input">
-                        <input type="number" id="limitInput" min="1" max="100" value="15">
-                    </div>
+            <div class="setting-row">
+                <span class="setting-label">💵 Цена пачки</span>
+                <div class="setting-control">
+                    <button id="priceMinus">−</button>
+                    <span><span id="priceValue">200</span> ₽</span>
+                    <button id="pricePlus">+</button>
                 </div>
-
-                <div class="settings-group">
-                    <label class="settings-label">💵 Цена пачки сигарет</label>
-                    <div class="settings-input">
-                        <input type="number" id="packPrice" min="0" step="10" value="200">
-                        <select id="currencySelect" class="currency-select" style="width: auto;">
-                            <option value="₽">₽</option>
-                            <option value="$">$</option>
-                            <option value="€">€</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <label class="settings-label">🚬 Сигарет в пачке</label>
-                    <div class="settings-input">
-                        <input type="number" id="cigsPerPack" min="1" max="50" value="20">
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <h4 style="margin-bottom: 12px;">🔔 Уведомления</h4>
-                    
-                    <div class="notification-settings">
-                        <span>Превышение лимита</span>
-                        <label class="switch">
-                            <input type="checkbox" id="notifyLimit" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="notification-settings">
-                        <span>Долгий перерыв (2+ часа)</span>
-                        <label class="switch">
-                            <input type="checkbox" id="notifyBreak" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-
-                    <div class="notification-settings">
-                        <span>Новое достижение</span>
-                        <label class="switch">
-                            <input type="checkbox" id="notifyAchievement" checked>
-                            <span class="slider"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="btn" id="saveSettingsBtn">💾 Сохранить настройки</button>
-                <button class="btn secondary" id="syncNowBtn">🔄 Синхронизировать</button>
-                <button class="btn secondary" id="exportCSVBtn">📊 Экспорт в CSV</button>
-                <button class="btn secondary" id="clearDataBtn">🗑️ Очистить данные</button>
             </div>
         </div>
+
+        <!-- Действия -->
+        <button class="action-btn" id="syncBtn">🔄 Синхронизировать</button>
+        <button class="action-btn secondary" id="resetAllBtn">🗑️ Сбросить всё</button>
     </div>
+
+    <!-- Тосты -->
+    <div class="toast-message" id="toast"></div>
 
     <script>
         // Инициализация Telegram
-        let tg = window.Telegram.WebApp;
+        const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
 
-        // Состояние приложения
-        let state = {
+        // Данные приложения
+        let appData = {
             userName: '',
             count: 0,
             limit: 15,
-            lastSmokeTime: null,
-            timerInterval: null,
-            weeklyData: {},
             packPrice: 200,
-            currency: '₽',
-            cigsPerPack: 20,
-            achievements: {},
-            bestStreak: 0,
-            settings: {
-                notifyLimit: true,
-                notifyBreak: true,
-                notifyAchievement: true
-            }
+            lastSmokeTime: null,
+            totalSmoked: 0
         };
 
-        let chart = null;
-        let currentWeekOffset = 0;
-        let syncToastTimeout = null;
+        let timerInterval = null;
 
         // DOM элементы
-        const elements = {
-            userNameDisplay: document.getElementById('userNameDisplay'),
-            userStats: document.getElementById('userStats'),
-            daysTracked: document.getElementById('daysTracked'),
-            totalSmoked: document.getElementById('totalSmoked'),
-            moneySavedWelcome: document.getElementById('moneySavedWelcome'),
-            nameSetup: document.getElementById('nameSetup'),
-            nameInput: document.getElementById('nameInput'),
-            userNameSettings: document.getElementById('userNameSettings'),
-            counter: document.getElementById('counter'),
-            limitDisplay: document.getElementById('limitDisplay'),
-            progressFill: document.getElementById('progressFill'),
-            timerDisplay: document.getElementById('timerDisplay'),
-            timerStatus: document.getElementById('timerStatus'),
-            moneySaved: document.getElementById('moneySaved'),
-            cigarettesSaved: document.getElementById('cigarettesSaved'),
-            lifeGained: document.getElementById('lifeGained'),
-            weeklyChart: document.getElementById('weeklyChart').getContext('2d'),
-            weekRange: document.getElementById('weekRange'),
-            totalCigarettes: document.getElementById('totalCigarettes'),
-            avgCigarettes: document.getElementById('avgCigarettes'),
-            bestStreak: document.getElementById('bestStreak'),
-            limitInput: document.getElementById('limitInput'),
-            packPrice: document.getElementById('packPrice'),
-            currencySelect: document.getElementById('currencySelect'),
-            cigsPerPack: document.getElementById('cigsPerPack'),
-            notifyLimit: document.getElementById('notifyLimit'),
-            notifyBreak: document.getElementById('notifyBreak'),
-            notifyAchievement: document.getElementById('notifyAchievement')
-        };
+        const displayName = document.getElementById('displayName');
+        const greetingMessage = document.getElementById('greetingMessage');
+        const nameInput = document.getElementById('nameInput');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const timerStatus = document.getElementById('timerStatus');
+        const counter = document.getElementById('counter');
+        const limitDisplay = document.getElementById('limitDisplay');
+        const limitValue = document.getElementById('limitValue');
+        const priceValue = document.getElementById('priceValue');
+        const progressFill = document.getElementById('progressFill');
+        const moneySaved = document.getElementById('moneySaved');
+        const cigarettesSaved = document.getElementById('cigarettesSaved');
+        const lifeGained = document.getElementById('lifeGained');
+        const toast = document.getElementById('toast');
 
-        // Показ уведомления (вместо назойливого попапа)
-        function showToast(message, duration = 2000) {
-            const toast = document.createElement('div');
-            toast.className = 'toast';
-            toast.textContent = message;
-            document.body.appendChild(toast);
-            
+        // Функция показа уведомления
+        function showToastMessage(text, duration = 2000) {
+            toast.textContent = text;
+            toast.classList.add('show');
             setTimeout(() => {
-                toast.remove();
+                toast.classList.remove('show');
             }, duration);
         }
 
         // Загрузка данных
-        async function loadFromCloud() {
+        async function loadData() {
             try {
-                const result = await tg.CloudStorage.getItem('smokeTrackerState');
-                if (result) {
-                    const cloudState = JSON.parse(result);
-                    state = { ...state, ...cloudState };
+                // Пробуем загрузить из облака Telegram
+                const cloudData = await tg.CloudStorage.getItem('smokeAppData');
+                if (cloudData) {
+                    appData = { ...appData, ...JSON.parse(cloudData) };
                 }
             } catch (e) {
-                console.log('Загрузка из облака не удалась, используем localStorage');
-                loadFromLocal();
-            }
-            
-            // Проверяем, есть ли имя
-            if (!state.userName) {
-                // Пытаемся взять имя из Telegram
-                const tgUser = tg.initDataUnsafe?.user;
-                if (tgUser) {
-                    state.userName = tgUser.first_name || '';
+                // Если облако недоступно, пробуем localStorage
+                const localData = localStorage.getItem('smokeAppData');
+                if (localData) {
+                    appData = { ...appData, ...JSON.parse(localData) };
                 }
             }
-            
-            updateUI();
-            updateWelcomeCard();
+
+            // Если имя не задано, пробуем взять из Telegram
+            if (!appData.userName && tg.initDataUnsafe?.user?.first_name) {
+                appData.userName = tg.initDataUnsafe.user.first_name;
+            }
+
+            updateAllUI();
             startTimerIfNeeded();
-            updateChart();
-            updateSavings();
-            checkAchievements();
-            
-            // Показываем настройку имени только если имя не задано
-            if (!state.userName || state.userName === '') {
-                elements.nameSetup.style.display = 'block';
-            }
         }
 
-        function loadFromLocal() {
-            const saved = localStorage.getItem('smokeTrackerState');
-            if (saved) {
-                state = { ...state, ...JSON.parse(saved) };
-            }
-        }
-
-        // Сохранение в облако (тихое)
-        async function saveToCloud(showMessage = false) {
-            const dataToSave = {
-                userName: state.userName,
-                count: state.count,
-                limit: state.limit,
-                lastSmokeTime: state.lastSmokeTime,
-                weeklyData: state.weeklyData,
-                packPrice: state.packPrice,
-                currency: state.currency,
-                cigsPerPack: state.cigsPerPack,
-                achievements: state.achievements,
-                bestStreak: state.bestStreak,
-                settings: state.settings
-            };
-            
-            localStorage.setItem('smokeTrackerState', JSON.stringify(dataToSave));
+        // Сохранение данных
+        async function saveData(showMessage = false) {
+            const dataToSave = JSON.stringify(appData);
+            localStorage.setItem('smokeAppData', dataToSave);
             
             try {
-                await tg.CloudStorage.setItem('smokeTrackerState', JSON.stringify(dataToSave));
+                await tg.CloudStorage.setItem('smokeAppData', dataToSave);
                 if (showMessage) {
-                    showToast('✅ Данные синхронизированы');
+                    showToastMessage('✅ Данные синхронизированы');
                 }
             } catch (e) {
                 if (showMessage) {
-                    showToast('⚠️ Синхронизация не удалась');
+                    showToastMessage('⚠️ Сохранено только локально');
                 }
             }
         }
 
-        // Обновление приветственной карточки
-        function updateWelcomeCard() {
-            const displayName = state.userName || 'Гость';
-            elements.userNameDisplay.textContent = `, ${displayName}`;
-            
-            if (state.userName) {
-                elements.userStats.textContent = `Удачи сегодня, ${state.userName}!`;
+        // Обновление всего UI
+        function updateAllUI() {
+            // Имя
+            if (appData.userName) {
+                displayName.textContent = appData.userName;
+                greetingMessage.textContent = `Удачи сегодня, ${appData.userName}!`;
+                nameInput.value = appData.userName;
             } else {
-                elements.userStats.textContent = 'Укажите ваше имя в настройках';
+                displayName.textContent = 'Гость';
+                greetingMessage.textContent = 'Введите ваше имя';
             }
-            
-            // Статистика
-            const daysTracked = Object.keys(state.weeklyData).length;
-            const totalSmoked = Object.values(state.weeklyData).reduce((a, b) => a + b, 0);
-            const moneySavedAmount = Math.round(totalSmoked * (state.packPrice / state.cigsPerPack));
-            
-            elements.daysTracked.textContent = daysTracked;
-            elements.totalSmoked.textContent = totalSmoked;
-            elements.moneySavedWelcome.textContent = `${moneySavedAmount} ${state.currency}`;
-            
-            elements.userNameSettings.value = state.userName || '';
+
+            // Счётчик
+            counter.textContent = appData.count;
+            limitDisplay.textContent = `/ ${appData.limit}`;
+            limitValue.textContent = appData.limit;
+            priceValue.textContent = appData.packPrice;
+
+            // Прогресс
+            const progress = (appData.count / appData.limit) * 100;
+            progressFill.style.width = `${Math.min(progress, 100)}%`;
+
+            // Экономия
+            updateSavings();
         }
 
-        // Обновление UI
-        function updateUI() {
-            elements.counter.textContent = state.count;
-            elements.limitDisplay.textContent = `/ ${state.limit}`;
-            elements.limitInput.value = state.limit;
-            elements.packPrice.value = state.packPrice;
-            elements.currencySelect.value = state.currency;
-            elements.cigsPerPack.value = state.cigsPerPack;
-            elements.notifyLimit.checked = state.settings.notifyLimit;
-            elements.notifyBreak.checked = state.settings.notifyBreak;
-            elements.notifyAchievement.checked = state.settings.notifyAchievement;
-            
-            const progress = (state.count / state.limit) * 100;
-            elements.progressFill.style.width = `${Math.min(progress, 100)}%`;
-        }
+        // Обновление экономии
+        function updateSavings() {
+            const totalSmoked = appData.totalSmoked + appData.count;
+            const pricePerCig = appData.packPrice / 20;
+            const savedMoney = Math.round(totalSmoked * pricePerCig);
+            const savedLife = Math.round(totalSmoked * 0.18 * 10) / 10;
 
-        // Сохранение имени
-        function saveUserName() {
-            const newName = elements.nameInput.value.trim();
-            if (newName) {
-                state.userName = newName;
-                elements.nameSetup.style.display = 'none';
-                updateWelcomeCard();
-                saveToCloud(true);
-            }
+            moneySaved.textContent = `${savedMoney} ₽`;
+            cigarettesSaved.textContent = totalSmoked;
+            lifeGained.textContent = savedLife;
         }
 
         // Таймер
         function startTimerIfNeeded() {
-            if (state.lastSmokeTime) {
+            if (appData.lastSmokeTime) {
                 updateTimer();
-                if (!state.timerInterval) {
-                    state.timerInterval = setInterval(updateTimer, 1000);
+                if (!timerInterval) {
+                    timerInterval = setInterval(updateTimer, 1000);
                 }
             }
         }
 
         function updateTimer() {
-            if (!state.lastSmokeTime) {
-                elements.timerDisplay.textContent = '00:00:00';
-                elements.timerStatus.textContent = 'Нажмите +1 для старта';
+            if (!appData.lastSmokeTime) {
+                timerDisplay.textContent = '00:00:00';
+                timerStatus.textContent = 'Нажмите +1 для старта';
                 return;
             }
 
-            const now = Date.now();
-            const diff = Math.floor((now - state.lastSmokeTime) / 1000);
-            
+            const diff = Math.floor((Date.now() - appData.lastSmokeTime) / 1000);
             const hours = Math.floor(diff / 3600);
             const minutes = Math.floor((diff % 3600) / 60);
             const seconds = diff % 60;
-            
-            elements.timerDisplay.textContent = 
+
+            timerDisplay.textContent = 
                 `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-            
-            if (diff === 7200 && state.settings.notifyBreak) {
+
+            if (diff < 3600) {
+                timerStatus.textContent = '🔥 Держитесь!';
+            } else if (diff < 7200) {
+                timerStatus.textContent = '💪 Хороший прогресс!';
+            } else {
+                timerStatus.textContent = '✨ Отлично!';
+            }
+
+            // Уведомление о 2 часах
+            if (diff === 7200) {
                 tg.showPopup({
-                    title: '🎉 Отличный прогресс!',
-                    message: 'Вы не курите уже 2 часа! Продолжайте в том же духе!',
+                    title: '🎉 Отлично!',
+                    message: 'Вы не курите уже 2 часа!',
                     buttons: [{type: 'ok'}]
                 });
-            }
-            
-            if (diff < 3600) {
-                elements.timerStatus.textContent = '🔥 Сложный период, держитесь!';
-            } else if (diff < 7200) {
-                elements.timerStatus.textContent = '💪 Вы справляетесь!';
-            } else {
-                elements.timerStatus.textContent = '✨ Отлично! Так держать!';
-            }
-            
-            if (diff > state.bestStreak) {
-                state.bestStreak = diff;
-                saveToCloud(false);
             }
         }
 
         function resetTimer() {
-            state.lastSmokeTime = Date.now();
-            if (state.timerInterval) {
-                clearInterval(state.timerInterval);
-            }
-            state.timerInterval = setInterval(updateTimer, 1000);
+            appData.lastSmokeTime = Date.now();
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
             updateTimer();
-            saveToCloud(false);
+            saveData();
             
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
@@ -953,318 +539,117 @@
 
         // Добавление сигареты
         function addSmoke() {
-            state.count++;
-            
-            const today = getTodayKey();
-            state.weeklyData[today] = (state.weeklyData[today] || 0) + 1;
-            
+            appData.count++;
+            appData.totalSmoked++;
             resetTimer();
-            updateUI();
-            updateWelcomeCard();
-            updateSavings();
-            checkAchievements();
-            updateChart();
-            saveToCloud(false);
-            
+            updateAllUI();
+            saveData();
+
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
-            
-            if (state.count === state.limit && state.settings.notifyLimit) {
+
+            // Проверка лимита
+            if (appData.count === appData.limit) {
                 tg.showPopup({
                     title: '⚠️ Внимание',
                     message: 'Вы достигли дневного лимита!',
                     buttons: [{type: 'ok'}]
                 });
-            } else if (state.count > state.limit && state.settings.notifyLimit) {
+            } else if (appData.count > appData.limit) {
                 tg.showPopup({
-                    title: '❌ Превышение лимита',
-                    message: `Вы превысили лимит на ${state.count - state.limit} сигарет.`,
+                    title: '❌ Превышение',
+                    message: `Лимит превышен на ${appData.count - appData.limit} сигарет`,
                     buttons: [{type: 'ok'}]
                 });
             }
         }
 
-        // Экономия
-        function updateSavings() {
-            const totalSmoked = Object.values(state.weeklyData).reduce((a, b) => a + b, 0);
-            const pricePerCig = state.packPrice / state.cigsPerPack;
-            const moneySavedAmount = Math.round(totalSmoked * pricePerCig);
-            const lifeSaved = Math.round(totalSmoked * 0.18 * 10) / 10;
-            
-            elements.moneySaved.textContent = `${moneySavedAmount} ${state.currency}`;
-            elements.cigarettesSaved.textContent = totalSmoked;
-            elements.lifeGained.textContent = lifeSaved;
-        }
-
-        // Достижения
-        const achievementsList = [
-            { id: 'first_smoke', name: 'Первая сигарета', desc: 'Начните отслеживание', icon: '🚬', condition: () => true },
-            { id: 'hour_free', name: 'Час свободы', desc: 'Продержитесь 1 час без сигарет', icon: '⏱️', condition: () => getStreakHours() >= 1 },
-            { id: 'day_free', name: 'Целый день', desc: '24 часа без сигарет', icon: '🌟', condition: () => getStreakHours() >= 24 },
-            { id: 'money_saved', name: 'Экономист', desc: 'Сэкономьте 1000', icon: '💰', condition: () => getMoneySaved() >= 1000 }
-        ];
-
-        function getStreakHours() {
-            if (!state.lastSmokeTime) return 0;
-            return Math.floor((Date.now() - state.lastSmokeTime) / 3600000);
-        }
-
-        function getMoneySaved() {
-            const totalSmoked = Object.values(state.weeklyData).reduce((a, b) => a + b, 0);
-            return totalSmoked * (state.packPrice / state.cigsPerPack);
-        }
-
-        function checkAchievements() {
-            achievementsList.forEach(ach => {
-                if (!state.achievements[ach.id] && ach.condition()) {
-                    state.achievements[ach.id] = true;
-                    
-                    if (state.settings.notifyAchievement) {
-                        tg.showPopup({
-                            title: `🏆 ${ach.name}`,
-                            message: `${ach.desc}\n${ach.icon} Достижение разблокировано!`,
-                            buttons: [{type: 'ok'}]
-                        });
-                    }
-                }
-            });
-            
-            renderAchievements();
-        }
-
-        function renderAchievements() {
-            const container = document.getElementById('achievementsList');
-            container.innerHTML = achievementsList.map(ach => `
-                <div class="achievement-item ${state.achievements[ach.id] ? 'unlocked' : ''}">
-                    <div class="achievement-icon">${ach.icon}</div>
-                    <div class="achievement-info">
-                        <div class="achievement-name">${ach.name}</div>
-                        <div class="achievement-desc">${ach.desc}</div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // График
-        function getWeekDates(offset = 0) {
-            const dates = [];
-            const today = new Date();
-            const currentDay = today.getDay() || 7;
-            const monday = new Date(today);
-            monday.setDate(today.getDate() - currentDay + 1 + (offset * 7));
-            
-            for (let i = 0; i < 7; i++) {
-                const date = new Date(monday);
-                date.setDate(monday.getDate() + i);
-                dates.push(date);
-            }
-            return dates;
-        }
-
-        function updateChart() {
-            const dates = getWeekDates(currentWeekOffset);
-            const labels = dates.map(d => {
-                const day = String(d.getDate()).padStart(2, '0');
-                const month = String(d.getMonth() + 1).padStart(2, '0');
-                return `${day}.${month}`;
-            });
-            
-            const values = dates.map(d => {
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                return state.weeklyData[key] || 0;
-            });
-
-            const total = values.reduce((a, b) => a + b, 0);
-            const avg = (total / 7).toFixed(1);
-            
-            elements.totalCigarettes.textContent = total;
-            elements.avgCigarettes.textContent = avg;
-            elements.bestStreak.textContent = `${Math.floor(state.bestStreak / 3600)} ч ${Math.floor((state.bestStreak % 3600) / 60)} мин`;
-            
-            const firstDate = dates[0];
-            const lastDate = dates[6];
-            elements.weekRange.textContent = `${String(firstDate.getDate()).padStart(2, '0')}.${String(firstDate.getMonth() + 1).padStart(2, '0')} - ${String(lastDate.getDate()).padStart(2, '0')}.${String(lastDate.getMonth() + 1).padStart(2, '0')}`;
-
-            if (chart) {
-                chart.destroy();
-            }
-            
-            chart = new Chart(elements.weeklyChart, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Сигарет',
-                        data: values,
-                        backgroundColor: '#e74c3c',
-                        borderRadius: 8,
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
-                        },
-                        x: {
-                            grid: { display: false },
-                            ticks: { color: 'rgba(255, 255, 255, 0.7)' }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Экспорт
-        function exportToCSV() {
-            let csv = 'Дата,Количество сигарет\n';
-            Object.entries(state.weeklyData).sort().forEach(([date, count]) => {
-                csv += `${date},${count}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'smoking_stats.csv';
-            a.click();
-            showToast('📊 Статистика экспортирована');
-        }
-
-        function getTodayKey() {
-            const date = new Date();
-            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        }
-
         // Обработчики событий
-        elements.addBtn.addEventListener('click', addSmoke);
-        
-        elements.resetBtn.addEventListener('click', () => {
+        document.getElementById('saveNameBtn').addEventListener('click', () => {
+            const newName = nameInput.value.trim();
+            if (newName) {
+                appData.userName = newName;
+                updateAllUI();
+                saveData();
+                showToastMessage('✅ Имя сохранено');
+            }
+        });
+
+        document.getElementById('addBtn').addEventListener('click', addSmoke);
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
             tg.showConfirm('Сбросить счётчик за сегодня?', (confirmed) => {
                 if (confirmed) {
-                    state.count = 0;
-                    updateUI();
-                    saveToCloud(false);
-                    if (tg.HapticFeedback) {
-                        tg.HapticFeedback.notificationOccurred('warning');
-                    }
+                    appData.count = 0;
+                    updateAllUI();
+                    saveData();
+                    showToastMessage('🔄 Счётчик сброшен');
                 }
             });
         });
 
-        // Работа с именем
-        document.getElementById('saveNameBtn').addEventListener('click', saveUserName);
-        document.getElementById('skipNameBtn').addEventListener('click', () => {
-            elements.nameSetup.style.display = 'none';
-        });
-        document.getElementById('editNameBtn').addEventListener('click', () => {
-            elements.nameInput.value = state.userName || '';
-            elements.nameSetup.style.display = 'block';
-        });
-        document.getElementById('updateNameBtn').addEventListener('click', () => {
-            const newName = elements.userNameSettings.value.trim();
-            if (newName) {
-                state.userName = newName;
-                updateWelcomeCard();
-                saveToCloud(true);
+        document.getElementById('limitMinus').addEventListener('click', () => {
+            if (appData.limit > 1) {
+                appData.limit--;
+                updateAllUI();
+                saveData();
             }
         });
 
-        // Вкладки
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`panel-${tabName}`).classList.add('active');
-                
-                if (tabName === 'stats') updateChart();
-                if (tabName === 'achievements') renderAchievements();
-            });
+        document.getElementById('limitPlus').addEventListener('click', () => {
+            if (appData.limit < 100) {
+                appData.limit++;
+                updateAllUI();
+                saveData();
+            }
         });
 
-        // Настройки
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-            state.limit = parseInt(elements.limitInput.value);
-            state.packPrice = parseInt(elements.packPrice.value);
-            state.currency = elements.currencySelect.value;
-            state.cigsPerPack = parseInt(elements.cigsPerPack.value);
-            state.settings = {
-                notifyLimit: elements.notifyLimit.checked,
-                notifyBreak: elements.notifyBreak.checked,
-                notifyAchievement: elements.notifyAchievement.checked
-            };
-            
-            updateUI();
-            updateWelcomeCard();
+        document.getElementById('priceMinus').addEventListener('click', () => {
+            if (appData.packPrice > 10) {
+                appData.packPrice -= 10;
+                updateAllUI();
+                updateSavings();
+                saveData();
+            }
+        });
+
+        document.getElementById('pricePlus').addEventListener('click', () => {
+            appData.packPrice += 10;
+            updateAllUI();
             updateSavings();
-            saveToCloud(true);
+            saveData();
         });
 
-        document.getElementById('syncNowBtn').addEventListener('click', () => saveToCloud(true));
-        document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
-        
-        document.getElementById('exportDataBtn').addEventListener('click', () => {
-            const data = JSON.stringify(state, null, 2);
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'smoke_tracker_backup.json';
-            a.click();
-            showToast('📦 Резервная копия создана');
+        document.getElementById('syncBtn').addEventListener('click', () => {
+            saveData(true);
         });
 
-        document.getElementById('clearDataBtn').addEventListener('click', () => {
-            tg.showConfirm('Удалить ВСЕ данные? Это действие нельзя отменить!', async (confirmed) => {
+        document.getElementById('resetAllBtn').addEventListener('click', () => {
+            tg.showConfirm('Удалить ВСЕ данные? Это нельзя отменить!', (confirmed) => {
                 if (confirmed) {
-                    state = {
-                        ...state,
+                    appData = {
+                        userName: appData.userName,
                         count: 0,
-                        weeklyData: {},
-                        achievements: {},
-                        bestStreak: 0,
-                        lastSmokeTime: null
+                        limit: 15,
+                        packPrice: 200,
+                        lastSmokeTime: null,
+                        totalSmoked: 0
                     };
-                    updateUI();
-                    updateWelcomeCard();
-                    updateChart();
-                    updateSavings();
-                    await saveToCloud(false);
-                    showToast('🗑️ Данные очищены');
+                    updateAllUI();
+                    saveData();
+                    showToastMessage('🗑️ Все данные сброшены');
                 }
             });
         });
 
-        document.getElementById('prevWeek').addEventListener('click', () => {
-            currentWeekOffset--;
-            updateChart();
-        });
-
-        document.getElementById('nextWeek').addEventListener('click', () => {
-            if (currentWeekOffset < 0) {
-                currentWeekOffset++;
-                updateChart();
-            }
-        });
-
-        // Главная кнопка Telegram
-        tg.MainButton.text = '📊 ЗАКРЫТЬ';
+        // Главная кнопка
+        tg.MainButton.text = 'ЗАКРЫТЬ';
         tg.MainButton.show();
         tg.MainButton.onClick(() => tg.close());
 
-        // Инициализация
-        loadFromCloud();
+        // Запуск
+        loadData();
     </script>
 </body>
 </html>
