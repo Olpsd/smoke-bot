@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Smoke Tracker Pro</title>
+    <title>Smoke Tracker</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * {
@@ -25,44 +25,6 @@
             margin: 0 auto;
         }
 
-        /* Вкладки */
-        .tabs {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            background: var(--tg-theme-secondary-bg-color, #2c2c2e);
-            padding: 4px;
-            border-radius: 12px;
-        }
-
-        .tab {
-            flex: 1;
-            padding: 12px 8px;
-            background: transparent;
-            border: none;
-            color: var(--tg-theme-text-color, #fff);
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 8px;
-            opacity: 0.6;
-            transition: all 0.2s;
-        }
-
-        .tab.active {
-            background: var(--tg-theme-button-color, #e74c3c);
-            color: white;
-            opacity: 1;
-        }
-
-        .panel {
-            display: none;
-        }
-
-        .panel.active {
-            display: block;
-        }
-
-        /* Карточки */
         .card {
             background: var(--tg-theme-secondary-bg-color, #2c2c2e);
             border-radius: 16px;
@@ -205,47 +167,6 @@
             opacity: 0.7;
         }
 
-        /* Рейтинг */
-        .rating-list {
-            margin-top: 12px;
-        }
-
-        .rating-item {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-
-        .rating-position {
-            width: 30px;
-            font-size: 18px;
-            font-weight: 700;
-            color: #f1c40f;
-        }
-
-        .rating-user {
-            flex: 1;
-            font-weight: 500;
-        }
-
-        .rating-stats {
-            text-align: right;
-        }
-
-        .rating-value {
-            font-size: 18px;
-            font-weight: 600;
-            color: #e74c3c;
-        }
-
-        .rating-label {
-            font-size: 11px;
-            opacity: 0.6;
-        }
-
         /* Настройки */
         .setting-row {
             display: flex;
@@ -280,6 +201,15 @@
             font-weight: 600;
             min-width: 40px;
             text-align: center;
+        }
+
+        .setting-control input {
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+            background: #3a3a3c;
+            color: white;
+            width: 150px;
         }
 
         /* Кнопки */
@@ -323,22 +253,6 @@
         .toast-message.show {
             opacity: 1;
         }
-
-        /* Индикатор загрузки */
-        .loading {
-            text-align: center;
-            padding: 20px;
-            opacity: 0.6;
-        }
-
-        .badge {
-            background: #2ecc71;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            margin-left: 8px;
-        }
     </style>
 </head>
 <body>
@@ -349,109 +263,83 @@
             <p id="greetingText">Загружаем данные...</p>
         </div>
 
-        <!-- Вкладки -->
-        <div class="tabs">
-            <button class="tab active" data-tab="main">🏠 Главная</button>
-            <button class="tab" data-tab="rating">🏆 Рейтинг</button>
-            <button class="tab" data-tab="settings">⚙️ Настройки</button>
+        <!-- Таймер -->
+        <div class="card timer">
+            <div class="timer-label">⏱️ ВРЕМЯ БЕЗ СИГАРЕТ</div>
+            <div class="timer-display" id="timerDisplay">00:00:00</div>
+            <div class="timer-status" id="timerStatus">Нажмите +1 для старта</div>
         </div>
 
-        <!-- Главная панель -->
-        <div class="panel active" id="panel-main">
-            <!-- Таймер -->
-            <div class="card timer">
-                <div class="timer-label">⏱️ ВРЕМЯ БЕЗ СИГАРЕТ</div>
-                <div class="timer-display" id="timerDisplay">00:00:00</div>
-                <div class="timer-status" id="timerStatus">Нажмите +1 для старта</div>
-            </div>
-
-            <!-- Счётчик -->
-            <div class="card">
-                <div class="counter-row">
-                    <div class="counter-info">
-                        <div class="counter-label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
-                        <div>
-                            <span class="counter-value" id="counter">0</span>
-                            <span class="counter-limit" id="limitDisplay">/ 15</span>
-                        </div>
-                    </div>
-                    <div class="counter-buttons">
-                        <button class="btn-circle reset" id="resetBtn">↻</button>
-                        <button class="btn-circle" id="addBtn">+</button>
+        <!-- Счётчик -->
+        <div class="card">
+            <div class="counter-row">
+                <div class="counter-info">
+                    <div class="counter-label">🚬 ВЫКУРЕНО СЕГОДНЯ</div>
+                    <div>
+                        <span class="counter-value" id="counter">0</span>
+                        <span class="counter-limit" id="limitDisplay">/ 15</span>
                     </div>
                 </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+                <div class="counter-buttons">
+                    <button class="btn-circle reset" id="resetBtn">↻</button>
+                    <button class="btn-circle" id="addBtn">+</button>
                 </div>
             </div>
-
-            <!-- Экономия -->
-            <div class="card">
-                <div class="savings">
-                    <div class="savings-item">
-                        <div class="savings-value" id="moneySaved">0 ₽</div>
-                        <div class="savings-label">Сэкономлено</div>
-                    </div>
-                    <div class="savings-item">
-                        <div class="savings-value" id="totalSmoked">0</div>
-                        <div class="savings-label">Всего сигарет</div>
-                    </div>
-                    <div class="savings-item">
-                        <div class="savings-value" id="lifeGained">0</div>
-                        <div class="savings-label">Часов жизни</div>
-                    </div>
-                </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
             </div>
-
-            <button class="action-btn" id="syncBtn">🔄 Синхронизировать с сервером</button>
         </div>
 
-        <!-- Рейтинг -->
-        <div class="panel" id="panel-rating">
-            <div class="card">
-                <h3 style="margin-bottom: 16px;">🏆 Рейтинг пользователей</h3>
-                <p style="opacity: 0.7; margin-bottom: 16px; font-size: 14px;">Кто меньше всех курит</p>
-                <div id="ratingContainer">
-                    <div class="loading">Загрузка рейтинга...</div>
+        <!-- Экономия -->
+        <div class="card">
+            <div class="savings">
+                <div class="savings-item">
+                    <div class="savings-value" id="moneySaved">0 ₽</div>
+                    <div class="savings-label">Сэкономлено</div>
                 </div>
-                <button class="action-btn secondary" id="refreshRatingBtn" style="margin-top: 12px;">🔄 Обновить рейтинг</button>
+                <div class="savings-item">
+                    <div class="savings-value" id="totalSmoked">0</div>
+                    <div class="savings-label">Всего сигарет</div>
+                </div>
+                <div class="savings-item">
+                    <div class="savings-value" id="lifeGained">0</div>
+                    <div class="savings-label">Часов жизни</div>
+                </div>
             </div>
         </div>
 
         <!-- Настройки -->
-        <div class="panel" id="panel-settings">
-            <div class="card">
-                <h3 style="margin-bottom: 16px;">⚙️ Настройки</h3>
-                
-                <div class="setting-row">
-                    <span class="setting-label">👤 Ваше имя</span>
-                    <div class="setting-control">
-                        <input type="text" id="nameInput" placeholder="Введите имя" maxlength="20" style="padding: 8px; border-radius: 8px; border: none; background: #3a3a3c; color: white;">
-                        <button id="saveNameBtn" style="padding: 8px 16px; border-radius: 8px; border: none; background: #e74c3c; color: white; cursor: pointer;">Сохранить</button>
-                    </div>
+        <div class="card">
+            <h3 style="margin-bottom: 16px;">⚙️ Настройки</h3>
+            
+            <div class="setting-row">
+                <span class="setting-label">👤 Ваше имя</span>
+                <div class="setting-control">
+                    <input type="text" id="nameInput" placeholder="Введите имя" maxlength="20">
+                    <button id="saveNameBtn" style="padding: 8px 16px; border-radius: 8px; border: none; background: #e74c3c; color: white; cursor: pointer;">✓</button>
                 </div>
-
-                <div class="setting-row">
-                    <span class="setting-label">🎯 Дневной лимит</span>
-                    <div class="setting-control">
-                        <button id="limitMinus">−</button>
-                        <span id="limitValue">15</span>
-                        <button id="limitPlus">+</button>
-                    </div>
-                </div>
-
-                <div class="setting-row">
-                    <span class="setting-label">💵 Цена пачки</span>
-                    <div class="setting-control">
-                        <button id="priceMinus">−</button>
-                        <span><span id="priceValue">200</span> ₽</span>
-                        <button id="pricePlus">+</button>
-                    </div>
-                </div>
-
-                <button class="action-btn" id="saveSettingsBtn">💾 Сохранить настройки</button>
-                <button class="action-btn secondary" id="resetAllBtn">🗑️ Сбросить всё</button>
             </div>
+
+            <div class="setting-row">
+                <span class="setting-label">🎯 Дневной лимит</span>
+                <div class="setting-control">
+                    <button id="limitMinus">−</button>
+                    <span id="limitValue">15</span>
+                    <button id="limitPlus">+</button>
+                </div>
+            </div>
+
+            <div class="setting-row">
+                <span class="setting-label">💵 Цена пачки</span>
+                <div class="setting-control">
+                    <button id="priceMinus">−</button>
+                    <span><span id="priceValue">200</span> ₽</span>
+                    <button id="pricePlus">+</button>
+                </div>
+            </div>
+
+            <button class="action-btn" id="syncBtn">🔄 Синхронизировать с сервером</button>
+            <button class="action-btn secondary" id="resetAllBtn">🗑️ Сбросить всё</button>
         </div>
     </div>
 
@@ -464,9 +352,6 @@
         tg.ready();
         tg.expand();
 
-        // Конфигурация сервера
-        const API_URL = 'http://2.27.41.11:8000';
-        
         // Данные пользователя из Telegram
         const userData = {
             id: tg.initDataUnsafe?.user?.id || 0,
@@ -509,37 +394,6 @@
             setTimeout(() => toast.classList.remove('show'), duration);
         }
 
-        async function syncWithServer() {
-            if (!userData.id) {
-                showToastMessage('⚠️ Не удалось получить ID пользователя');
-                return;
-            }
-
-            try {
-                // Отправляем данные на сервер
-                await fetch(`${API_URL}/api/smoke`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        user_id: userData.id,
-                        username: userData.username,
-                        first_name: appData.userName,
-                        count: appData.count
-                    })
-                });
-                
-                // Получаем обновлённую статистику
-                const response = await fetch(`${API_URL}/api/stats/${userData.id}`);
-                const serverStats = await response.json();
-                
-                appData.totalSmoked = serverStats.total || 0;
-                updateAllUI();
-                showToastMessage('✅ Синхронизировано с сервером');
-            } catch (e) {
-                showToastMessage('⚠️ Сервер недоступен, работаем локально');
-            }
-        }
-
         // ===== ЗАГРУЗКА ДАННЫХ =====
         async function loadData() {
             // Загружаем из облака Telegram
@@ -555,19 +409,6 @@
                 }
             }
 
-            // Если есть ID, пробуем синхронизироваться с сервером
-            if (userData.id) {
-                try {
-                    const response = await fetch(`${API_URL}/api/stats/${userData.id}`);
-                    const serverStats = await response.json();
-                    appData.totalSmoked = serverStats.total || 0;
-                    if (serverStats.limit) appData.limit = serverStats.limit;
-                    if (serverStats.pack_price) appData.packPrice = serverStats.pack_price;
-                } catch (e) {
-                    console.log('Сервер недоступен, работаем локально');
-                }
-            }
-
             updateAllUI();
             startTimerIfNeeded();
             greetingText.textContent = `Удачи сегодня, ${appData.userName}!`;
@@ -579,9 +420,9 @@
             
             try {
                 await tg.CloudStorage.setItem('smokeAppData', dataToSave);
-                if (showMessage) showToastMessage('✅ Сохранено локально');
+                if (showMessage) showToastMessage('✅ Сохранено');
             } catch (e) {
-                if (showMessage) showToastMessage('⚠️ Ошибка сохранения');
+                if (showMessage) showToastMessage('⚠️ Сохранено локально');
             }
         }
 
@@ -659,28 +500,11 @@
         }
 
         // ===== ДОБАВЛЕНИЕ СИГАРЕТЫ =====
-        async function addSmoke() {
+        function addSmoke() {
             appData.count++;
             resetTimer();
             updateAllUI();
             saveData();
-            
-            // Отправляем на сервер
-            if (userData.id) {
-                try {
-                    await fetch(`${API_URL}/api/smoke`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            user_id: userData.id,
-                            username: userData.username,
-                            first_name: appData.userName
-                        })
-                    });
-                } catch (e) {
-                    console.log('Сервер недоступен');
-                }
-            }
 
             if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
 
@@ -690,44 +514,12 @@
                     message: 'Вы достигли дневного лимита!',
                     buttons: [{type: 'ok'}]
                 });
-            }
-        }
-
-        // ===== РЕЙТИНГ =====
-        async function loadRating() {
-            const container = document.getElementById('ratingContainer');
-            container.innerHTML = '<div class="loading">Загрузка рейтинга...</div>';
-            
-            try {
-                const response = await fetch(`${API_URL}/api/rating`);
-                const rating = await response.json();
-                
-                if (rating.length === 0) {
-                    container.innerHTML = '<p style="text-align: center; opacity: 0.7;">Пока нет данных</p>';
-                    return;
-                }
-                
-                let html = '<div class="rating-list">';
-                rating.forEach((user, index) => {
-                    const lastSmoke = user.last_smoke ? new Date(user.last_smoke).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'}) : 'никогда';
-                    html += `
-                        <div class="rating-item">
-                            <div class="rating-position">#${index + 1}</div>
-                            <div class="rating-user">
-                                ${user.name}
-                                ${user.user_id === userData.id ? '<span class="badge">Вы</span>' : ''}
-                            </div>
-                            <div class="rating-stats">
-                                <div class="rating-value">${user.total || 0}</div>
-                                <div class="rating-label">сигарет</div>
-                            </div>
-                        </div>
-                    `;
+            } else if (appData.count > appData.limit) {
+                tg.showPopup({
+                    title: '❌ Превышение',
+                    message: `Лимит превышен на ${appData.count - appData.limit} сигарет`,
+                    buttons: [{type: 'ok'}]
                 });
-                html += '</div>';
-                container.innerHTML = html;
-            } catch (e) {
-                container.innerHTML = '<p style="text-align: center; opacity: 0.7; color: #e74c3c;">Ошибка загрузки рейтинга</p>';
             }
         }
 
@@ -772,40 +564,28 @@
             appData.packPrice += 10; updateAllUI(); updateSavings(); saveData();
         });
 
-        document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-            saveData();
-            syncWithServer();
+        document.getElementById('syncBtn').addEventListener('click', () => {
+            saveData(true);
+            showToastMessage('✅ Данные сохранены');
         });
-
-        document.getElementById('syncBtn').addEventListener('click', syncWithServer);
 
         document.getElementById('resetAllBtn').addEventListener('click', () => {
             tg.showConfirm('Удалить ВСЕ данные?', (confirmed) => {
                 if (confirmed) {
-                    appData = { ...appData, count: 0, lastSmokeTime: null, totalSmoked: 0 };
+                    appData = { 
+                        ...appData, 
+                        count: 0, 
+                        lastSmokeTime: null, 
+                        totalSmoked: 0,
+                        limit: 15,
+                        packPrice: 200
+                    };
                     updateAllUI();
                     saveData();
                     showToastMessage('🗑️ Данные сброшены');
                 }
             });
         });
-
-        // Вкладки
-        document.querySelectorAll('.tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabName = tab.dataset.tab;
-                
-                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(`panel-${tabName}`).classList.add('active');
-                
-                if (tabName === 'rating') loadRating();
-            });
-        });
-
-        document.getElementById('refreshRatingBtn').addEventListener('click', loadRating);
 
         // Главная кнопка Telegram
         tg.MainButton.text = 'ЗАКРЫТЬ';
