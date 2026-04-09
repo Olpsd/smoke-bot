@@ -28,6 +28,68 @@
             padding-bottom: 20px;
         }
 
+        /* Приветствие */
+        .welcome-card {
+            background: linear-gradient(135deg, var(--tg-theme-button-color, #e74c3c), #c0392b);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            color: white;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .welcome-name {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 4px;
+        }
+
+        .welcome-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 16px;
+        }
+
+        .welcome-stat {
+            text-align: center;
+        }
+
+        .welcome-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .welcome-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Настройка имени */
+        .name-setup {
+            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .name-input {
+            width: 100%;
+            padding: 16px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            color: var(--tg-theme-text-color, #fff);
+            font-size: 16px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
         /* Вкладки */
         .tabs {
             display: flex;
@@ -40,11 +102,11 @@
 
         .tab {
             flex: 1;
-            padding: 12px;
+            padding: 12px 8px;
             background: transparent;
             border: none;
             color: var(--tg-theme-text-color, #fff);
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             border-radius: 8px;
@@ -383,53 +445,84 @@
         }
 
         /* Анимации */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .warning {
-            color: #f1c40f;
-        }
-
-        .danger {
-            color: #e74c3c;
-        }
-
         .success {
             color: #2ecc71;
         }
 
-        /* Модальное окно */
-        .modal {
-            display: none;
+        /* Индикатор загрузки */
+        .toast {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.8);
-            align-items: center;
-            justify-content: center;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 14px;
             z-index: 1000;
+            animation: fadeInOut 2s ease;
         }
 
-        .modal.active {
-            display: flex;
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0; }
+            10%, 90% { opacity: 1; }
         }
 
-        .modal-content {
-            background: var(--tg-theme-secondary-bg-color, #1c1c1e);
-            padding: 24px;
-            border-radius: 20px;
-            max-width: 90%;
-            max-height: 80%;
-            overflow-y: auto;
+        /* Редактирование имени */
+        .edit-name {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            cursor: pointer;
+            margin-left: 8px;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .edit-name:hover {
+            opacity: 1;
         }
     </style>
 </head>
 <body>
     <div class="app">
+        <!-- Приветствие с именем -->
+        <div class="welcome-card" id="welcomeCard">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <div class="welcome-title">
+                        Привет<span id="userNameDisplay">, Гость</span>!
+                    </div>
+                    <div class="welcome-name" id="userStats"></div>
+                </div>
+                <button class="edit-name" id="editNameBtn">✏️</button>
+            </div>
+            <div class="welcome-stats">
+                <div class="welcome-stat">
+                    <div class="welcome-stat-value" id="daysTracked">0</div>
+                    <div class="welcome-stat-label">Дней</div>
+                </div>
+                <div class="welcome-stat">
+                    <div class="welcome-stat-value" id="totalSmoked">0</div>
+                    <div class="welcome-stat-label">Сигарет</div>
+                </div>
+                <div class="welcome-stat">
+                    <div class="welcome-stat-value" id="moneySavedWelcome">0</div>
+                    <div class="welcome-stat-label">Экономия</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Настройка имени (скрыта по умолчанию) -->
+        <div class="name-setup" id="nameSetup" style="display: none;">
+            <h3 style="margin-bottom: 16px;">👤 Как вас зовут?</h3>
+            <input type="text" class="name-input" id="nameInput" placeholder="Введите ваше имя" maxlength="20">
+            <button class="btn" id="saveNameBtn">Сохранить</button>
+            <button class="btn secondary" id="skipNameBtn">Пропустить</button>
+        </div>
+
         <!-- Вкладки -->
         <div class="tabs">
             <button class="tab active" data-tab="main">🏠 Главная</button>
@@ -469,7 +562,7 @@
 
             <!-- Экономия -->
             <div class="card savings-card">
-                <div style="font-size: 14px; opacity: 0.7;">💰 СЭКОНОМЛЕНО</div>
+                <div style="font-size: 14px; opacity: 0.7;">💰 СЭКОНОМЛЕНО ВСЕГО</div>
                 <div class="savings-amount" id="moneySaved">0 ₽</div>
                 <div class="savings-detail">
                     <div class="detail-item">
@@ -492,9 +585,9 @@
             <div class="card">
                 <canvas id="weeklyChart"></canvas>
                 <div style="display: flex; justify-content: space-between; margin-top: 12px;">
-                    <button class="week-btn" id="prevWeek">← Пред. неделя</button>
-                    <span id="weekRange">17.03 - 23.03</span>
-                    <button class="week-btn" id="nextWeek">След. неделя →</button>
+                    <button class="week-btn" id="prevWeek" style="padding: 8px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; cursor: pointer;">← Пред. неделя</button>
+                    <span id="weekRange" style="color: white;">17.03 - 23.03</span>
+                    <button class="week-btn" id="nextWeek" style="padding: 8px 16px; background: rgba(255,255,255,0.1); border: none; border-radius: 8px; color: white; cursor: pointer;">След. неделя →</button>
                 </div>
             </div>
             <div class="card">
@@ -511,10 +604,6 @@
                     <div style="display: flex; justify-content: space-between;">
                         <span>Лучший результат:</span>
                         <strong id="bestStreak">0 часов</strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>Текущая серия:</span>
-                        <strong id="currentStreak">0 дней</strong>
                     </div>
                 </div>
             </div>
@@ -533,6 +622,14 @@
             <div class="card">
                 <h3 style="margin-bottom: 20px;">⚙️ Настройки</h3>
                 
+                <div class="settings-group">
+                    <label class="settings-label">👤 Ваше имя</label>
+                    <div class="settings-input">
+                        <input type="text" id="userNameSettings" placeholder="Введите имя" maxlength="20">
+                        <button class="btn" style="width: auto; padding: 12px 20px;" id="updateNameBtn">Сохранить</button>
+                    </div>
+                </div>
+
                 <div class="settings-group">
                     <label class="settings-label">🎯 Дневной лимит сигарет</label>
                     <div class="settings-input">
@@ -588,9 +685,9 @@
                 </div>
 
                 <button class="btn" id="saveSettingsBtn">💾 Сохранить настройки</button>
-                <button class="btn secondary" id="syncNowBtn">🔄 Синхронизировать сейчас</button>
+                <button class="btn secondary" id="syncNowBtn">🔄 Синхронизировать</button>
                 <button class="btn secondary" id="exportCSVBtn">📊 Экспорт в CSV</button>
-                <button class="btn secondary" id="clearDataBtn">🗑️ Очистить все данные</button>
+                <button class="btn secondary" id="clearDataBtn">🗑️ Очистить данные</button>
             </div>
         </div>
     </div>
@@ -603,6 +700,7 @@
 
         // Состояние приложения
         let state = {
+            userName: '',
             count: 0,
             limit: 15,
             lastSmokeTime: null,
@@ -613,7 +711,6 @@
             cigsPerPack: 20,
             achievements: {},
             bestStreak: 0,
-            currentStreak: 0,
             settings: {
                 notifyLimit: true,
                 notifyBreak: true,
@@ -621,15 +718,25 @@
             }
         };
 
+        let chart = null;
+        let currentWeekOffset = 0;
+        let syncToastTimeout = null;
+
         // DOM элементы
         const elements = {
+            userNameDisplay: document.getElementById('userNameDisplay'),
+            userStats: document.getElementById('userStats'),
+            daysTracked: document.getElementById('daysTracked'),
+            totalSmoked: document.getElementById('totalSmoked'),
+            moneySavedWelcome: document.getElementById('moneySavedWelcome'),
+            nameSetup: document.getElementById('nameSetup'),
+            nameInput: document.getElementById('nameInput'),
+            userNameSettings: document.getElementById('userNameSettings'),
             counter: document.getElementById('counter'),
             limitDisplay: document.getElementById('limitDisplay'),
             progressFill: document.getElementById('progressFill'),
             timerDisplay: document.getElementById('timerDisplay'),
             timerStatus: document.getElementById('timerStatus'),
-            addBtn: document.getElementById('addBtn'),
-            resetBtn: document.getElementById('resetBtn'),
             moneySaved: document.getElementById('moneySaved'),
             cigarettesSaved: document.getElementById('cigarettesSaved'),
             lifeGained: document.getElementById('lifeGained'),
@@ -638,7 +745,6 @@
             totalCigarettes: document.getElementById('totalCigarettes'),
             avgCigarettes: document.getElementById('avgCigarettes'),
             bestStreak: document.getElementById('bestStreak'),
-            currentStreak: document.getElementById('currentStreak'),
             limitInput: document.getElementById('limitInput'),
             packPrice: document.getElementById('packPrice'),
             currencySelect: document.getElementById('currencySelect'),
@@ -648,10 +754,19 @@
             notifyAchievement: document.getElementById('notifyAchievement')
         };
 
-        let chart = null;
-        let currentWeekOffset = 0;
+        // Показ уведомления (вместо назойливого попапа)
+        function showToast(message, duration = 2000) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, duration);
+        }
 
-        // Загрузка данных из Telegram Cloud Storage
+        // Загрузка данных
         async function loadFromCloud() {
             try {
                 const result = await tg.CloudStorage.getItem('smokeTrackerState');
@@ -663,11 +778,27 @@
                 console.log('Загрузка из облака не удалась, используем localStorage');
                 loadFromLocal();
             }
+            
+            // Проверяем, есть ли имя
+            if (!state.userName) {
+                // Пытаемся взять имя из Telegram
+                const tgUser = tg.initDataUnsafe?.user;
+                if (tgUser) {
+                    state.userName = tgUser.first_name || '';
+                }
+            }
+            
             updateUI();
+            updateWelcomeCard();
             startTimerIfNeeded();
             updateChart();
             updateSavings();
             checkAchievements();
+            
+            // Показываем настройку имени только если имя не задано
+            if (!state.userName || state.userName === '') {
+                elements.nameSetup.style.display = 'block';
+            }
         }
 
         function loadFromLocal() {
@@ -677,9 +808,10 @@
             }
         }
 
-        // Сохранение в облако
-        async function saveToCloud() {
+        // Сохранение в облако (тихое)
+        async function saveToCloud(showMessage = false) {
             const dataToSave = {
+                userName: state.userName,
                 count: state.count,
                 limit: state.limit,
                 lastSmokeTime: state.lastSmokeTime,
@@ -696,14 +828,37 @@
             
             try {
                 await tg.CloudStorage.setItem('smokeTrackerState', JSON.stringify(dataToSave));
-                tg.showPopup({
-                    title: '✅ Синхронизация',
-                    message: 'Данные сохранены в облаке',
-                    buttons: [{type: 'ok'}]
-                });
+                if (showMessage) {
+                    showToast('✅ Данные синхронизированы');
+                }
             } catch (e) {
-                console.log('Сохранение в облаке не удалось');
+                if (showMessage) {
+                    showToast('⚠️ Синхронизация не удалась');
+                }
             }
+        }
+
+        // Обновление приветственной карточки
+        function updateWelcomeCard() {
+            const displayName = state.userName || 'Гость';
+            elements.userNameDisplay.textContent = `, ${displayName}`;
+            
+            if (state.userName) {
+                elements.userStats.textContent = `Удачи сегодня, ${state.userName}!`;
+            } else {
+                elements.userStats.textContent = 'Укажите ваше имя в настройках';
+            }
+            
+            // Статистика
+            const daysTracked = Object.keys(state.weeklyData).length;
+            const totalSmoked = Object.values(state.weeklyData).reduce((a, b) => a + b, 0);
+            const moneySavedAmount = Math.round(totalSmoked * (state.packPrice / state.cigsPerPack));
+            
+            elements.daysTracked.textContent = daysTracked;
+            elements.totalSmoked.textContent = totalSmoked;
+            elements.moneySavedWelcome.textContent = `${moneySavedAmount} ${state.currency}`;
+            
+            elements.userNameSettings.value = state.userName || '';
         }
 
         // Обновление UI
@@ -720,6 +875,17 @@
             
             const progress = (state.count / state.limit) * 100;
             elements.progressFill.style.width = `${Math.min(progress, 100)}%`;
+        }
+
+        // Сохранение имени
+        function saveUserName() {
+            const newName = elements.nameInput.value.trim();
+            if (newName) {
+                state.userName = newName;
+                elements.nameSetup.style.display = 'none';
+                updateWelcomeCard();
+                saveToCloud(true);
+            }
         }
 
         // Таймер
@@ -749,8 +915,7 @@
             elements.timerDisplay.textContent = 
                 `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
             
-            // Обновление статуса и проверка уведомлений
-            if (diff === 7200 && state.settings.notifyBreak) { // 2 часа
+            if (diff === 7200 && state.settings.notifyBreak) {
                 tg.showPopup({
                     title: '🎉 Отличный прогресс!',
                     message: 'Вы не курите уже 2 часа! Продолжайте в том же духе!',
@@ -766,10 +931,9 @@
                 elements.timerStatus.textContent = '✨ Отлично! Так держать!';
             }
             
-            // Обновление рекорда
             if (diff > state.bestStreak) {
                 state.bestStreak = diff;
-                saveToCloud();
+                saveToCloud(false);
             }
         }
 
@@ -780,7 +944,7 @@
             }
             state.timerInterval = setInterval(updateTimer, 1000);
             updateTimer();
-            saveToCloud();
+            saveToCloud(false);
             
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('medium');
@@ -796,16 +960,16 @@
             
             resetTimer();
             updateUI();
+            updateWelcomeCard();
             updateSavings();
             checkAchievements();
             updateChart();
-            saveToCloud();
+            saveToCloud(false);
             
             if (tg.HapticFeedback) {
                 tg.HapticFeedback.impactOccurred('light');
             }
             
-            // Уведомление о лимите
             if (state.count === state.limit && state.settings.notifyLimit) {
                 tg.showPopup({
                     title: '⚠️ Внимание',
@@ -825,10 +989,10 @@
         function updateSavings() {
             const totalSmoked = Object.values(state.weeklyData).reduce((a, b) => a + b, 0);
             const pricePerCig = state.packPrice / state.cigsPerPack;
-            const moneySavedAmount = totalSmoked * pricePerCig;
-            const lifeSaved = Math.round(totalSmoked * 0.18 * 10) / 10; // 11 минут = 0.18 часа
+            const moneySavedAmount = Math.round(totalSmoked * pricePerCig);
+            const lifeSaved = Math.round(totalSmoked * 0.18 * 10) / 10;
             
-            elements.moneySaved.textContent = `${Math.round(moneySavedAmount)} ${state.currency}`;
+            elements.moneySaved.textContent = `${moneySavedAmount} ${state.currency}`;
             elements.cigarettesSaved.textContent = totalSmoked;
             elements.lifeGained.textContent = lifeSaved;
         }
@@ -838,9 +1002,7 @@
             { id: 'first_smoke', name: 'Первая сигарета', desc: 'Начните отслеживание', icon: '🚬', condition: () => true },
             { id: 'hour_free', name: 'Час свободы', desc: 'Продержитесь 1 час без сигарет', icon: '⏱️', condition: () => getStreakHours() >= 1 },
             { id: 'day_free', name: 'Целый день', desc: '24 часа без сигарет', icon: '🌟', condition: () => getStreakHours() >= 24 },
-            { id: 'week_free', name: 'Неделя без дыма', desc: '7 дней без сигарет', icon: '🏆', condition: () => getStreakHours() >= 168 },
-            { id: 'money_saved', name: 'Экономист', desc: 'Сэкономьте 1000', icon: '💰', condition: () => getMoneySaved() >= 1000 },
-            { id: 'limit_keeper', name: 'В рамках лимита', desc: 'Не превышайте лимит 7 дней', icon: '🎯', condition: () => checkLimitStreak() >= 7 }
+            { id: 'money_saved', name: 'Экономист', desc: 'Сэкономьте 1000', icon: '💰', condition: () => getMoneySaved() >= 1000 }
         ];
 
         function getStreakHours() {
@@ -853,17 +1015,10 @@
             return totalSmoked * (state.packPrice / state.cigsPerPack);
         }
 
-        function checkLimitStreak() {
-            // Заглушка, нужно хранить историю соблюдения лимита
-            return 0;
-        }
-
         function checkAchievements() {
-            let newAchievements = false;
             achievementsList.forEach(ach => {
                 if (!state.achievements[ach.id] && ach.condition()) {
                     state.achievements[ach.id] = true;
-                    newAchievements = true;
                     
                     if (state.settings.notifyAchievement) {
                         tg.showPopup({
@@ -875,10 +1030,7 @@
                 }
             });
             
-            if (newAchievements) {
-                saveToCloud();
-                renderAchievements();
-            }
+            renderAchievements();
         }
 
         function renderAchievements() {
@@ -973,16 +1125,17 @@
         // Экспорт
         function exportToCSV() {
             let csv = 'Дата,Количество сигарет\n';
-            Object.entries(state.weeklyData).forEach(([date, count]) => {
+            Object.entries(state.weeklyData).sort().forEach(([date, count]) => {
                 csv += `${date},${count}\n`;
             });
             
-            const blob = new Blob([csv], { type: 'text/csv' });
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = 'smoking_stats.csv';
             a.click();
+            showToast('📊 Статистика экспортирована');
         }
 
         function getTodayKey() {
@@ -998,12 +1151,30 @@
                 if (confirmed) {
                     state.count = 0;
                     updateUI();
-                    saveToCloud();
+                    saveToCloud(false);
                     if (tg.HapticFeedback) {
                         tg.HapticFeedback.notificationOccurred('warning');
                     }
                 }
             });
+        });
+
+        // Работа с именем
+        document.getElementById('saveNameBtn').addEventListener('click', saveUserName);
+        document.getElementById('skipNameBtn').addEventListener('click', () => {
+            elements.nameSetup.style.display = 'none';
+        });
+        document.getElementById('editNameBtn').addEventListener('click', () => {
+            elements.nameInput.value = state.userName || '';
+            elements.nameSetup.style.display = 'block';
+        });
+        document.getElementById('updateNameBtn').addEventListener('click', () => {
+            const newName = elements.userNameSettings.value.trim();
+            if (newName) {
+                state.userName = newName;
+                updateWelcomeCard();
+                saveToCloud(true);
+            }
         });
 
         // Вкладки
@@ -1035,11 +1206,12 @@
             };
             
             updateUI();
+            updateWelcomeCard();
             updateSavings();
-            saveToCloud();
+            saveToCloud(true);
         });
 
-        document.getElementById('syncNowBtn').addEventListener('click', saveToCloud);
+        document.getElementById('syncNowBtn').addEventListener('click', () => saveToCloud(true));
         document.getElementById('exportCSVBtn').addEventListener('click', exportToCSV);
         
         document.getElementById('exportDataBtn').addEventListener('click', () => {
@@ -1050,6 +1222,7 @@
             a.href = url;
             a.download = 'smoke_tracker_backup.json';
             a.click();
+            showToast('📦 Резервная копия создана');
         });
 
         document.getElementById('clearDataBtn').addEventListener('click', () => {
@@ -1064,9 +1237,11 @@
                         lastSmokeTime: null
                     };
                     updateUI();
+                    updateWelcomeCard();
                     updateChart();
                     updateSavings();
-                    await saveToCloud();
+                    await saveToCloud(false);
+                    showToast('🗑️ Данные очищены');
                 }
             });
         });
